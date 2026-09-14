@@ -16,6 +16,8 @@ import (
 
 const Pid = "1000" // 固定商户号
 
+const MultiCurrencyType = "crypto"
+
 type Epay struct {
 }
 
@@ -86,7 +88,7 @@ func (e Epay) Submit(ctx *gin.Context) {
 		return
 	}
 
-	var order, err2 = model.StartBuildOrder(model.OrderParams{
+	params := model.OrderParams{
 		Money:       money,
 		ApiType:     model.OrderApiTypeEpay,
 		Address:     data.Address,
@@ -98,7 +100,17 @@ func (e Epay) Submit(ctx *gin.Context) {
 		Timeout:     cast.ToInt64(data.Timeout),
 		Rate:        data.Rate,
 		Fiat:        data.Fiat,
-	})
+	}
+
+	var order model.Order
+	var err2 error
+	if data.Type == MultiCurrencyType {
+		params.ApiType = model.OrderApiTypeEpayOrder
+		params.TradeType = ""
+		order, err2 = model.BuildPendingOrder(params)
+	} else {
+		order, err2 = model.StartBuildOrder(params)
+	}
 	if err2 != nil {
 		ctx.String(200, fmt.Sprintf("订单创建失败：%v", err2))
 

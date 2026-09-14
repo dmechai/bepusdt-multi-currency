@@ -1,0 +1,18 @@
+FROM golang:1.26.2-alpine3.23 AS builder
+
+WORKDIR /src
+COPY . .
+ARG VERSION=custom
+RUN go test ./app/model ./app/handler/epay ./app/task/notify
+RUN MODULE_PATH=$(go list -m) && CGO_ENABLED=0 go build -trimpath \
+    -ldflags="-X '${MODULE_PATH}/app.Version=${VERSION}' -s -w -buildid=" \
+    -o /bepusdt ./main
+
+FROM alpine:3.20
+ENV TZ=Asia/Shanghai
+RUN apk add --no-cache tzdata ca-certificates \
+    && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+COPY --from=builder /bepusdt /usr/local/bin/bepusdt
+EXPOSE 8080
+ENTRYPOINT ["bepusdt"]
+CMD ["start"]

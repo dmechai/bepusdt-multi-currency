@@ -42,7 +42,7 @@ func Handle(order model.Order) error {
 	defer cancel()
 
 	var err error
-	if order.ApiType == model.OrderApiTypeEpay {
+	if order.ApiType == model.OrderApiTypeEpay || order.ApiType == model.OrderApiTypeEpayOrder {
 		err = epay(ctx, order)
 	} else {
 		err = epusdt(ctx, order)
