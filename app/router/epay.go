@@ -10,5 +10,7 @@ func epayInit(engine *gin.Engine) {
 	{
 		engine.POST("/submit.php", epHdr.Submit)
 		engine.GET("/submit.php", epHdr.Submit)
+		engine.GET("/api.php", epHdr.QueryOrder)
+		engine.POST("/api.php", epHdr.QueryOrder)
 	}
 }
