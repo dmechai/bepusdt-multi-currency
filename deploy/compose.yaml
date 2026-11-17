@@ -1,0 +1,31 @@
+services:
+  bepusdt:
+    build:
+      context: ..
+      dockerfile: dockerfile
+      args:
+        VERSION: dmechai-custom
+    image: dmechai/bepusdt-multi-currency:local
+    container_name: bepusdt-multi-currency
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: Asia/Shanghai
+      LISTEN: :8080
+      SQLITE: /var/lib/bepusdt/sqlite.db
+      LOG: /var/log/bepusdt/
+    ports:
+      - 127.0.0.1:8080:8080
+    volumes:
+      - /var/lib/bepusdt-multi-currency:/var/lib/bepusdt
+      - /var/log/bepusdt-multi-currency:/var/log/bepusdt
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s

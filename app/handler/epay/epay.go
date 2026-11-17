@@ -117,11 +117,8 @@ func (e Epay) Submit(ctx *gin.Context) {
 		return
 	}
 
-	// 解析请求地址
-	var host = "http://" + ctx.Request.Host
-	if ctx.Request.TLS != nil {
-		host = "https://" + ctx.Request.Host
-	}
+	// 解析请求地址，兼容 Nginx 等 TLS 终止反向代理
+	var host = utils.GetRequestHost(ctx.Request)
 
 	ctx.Redirect(http.StatusFound, model.CheckoutUrl(host, order.TradeId))
 }
