@@ -1,0 +1,34 @@
+name: Check BEpusdt upstream release
+
+on:
+  schedule:
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Merge latest upstream release in the CI checkout
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=$(gh api repos/v03413/bepusdt/releases/latest --jq .tag_name)
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "Checking upstream ${tag}" >> "$GITHUB_STEP_SUMMARY"
+          git fetch --no-tags https://github.com/v03413/bepusdt.git "refs/tags/$tag"
+          git -c user.name='BEpusdt CI' -c user.email='ci@users.noreply.github.com' merge --no-edit FETCH_HEAD
+      - name: Build and test merged source
+        run: |
+          docker build --target builder -t bepusdt-ci-builder -f dockerfile .
+          docker run --rm -e CGO_ENABLED=0 bepusdt-ci-builder go test ./...
+          docker build -t bepusdt-ci -f dockerfile .

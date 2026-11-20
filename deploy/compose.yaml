@@ -4,8 +4,8 @@ services:
       context: ..
       dockerfile: dockerfile
       args:
-        VERSION: dmechai-custom
-    image: dmechai/bepusdt-multi-currency:local
+        VERSION: ${BEPUSDT_VERSION:-v1.24.4-dmechai}
+    image: dmechai/bepusdt-multi-currency:${BEPUSDT_VERSION:-v1.24.4-dmechai}
     container_name: bepusdt-multi-currency
     restart: unless-stopped
     logging:
